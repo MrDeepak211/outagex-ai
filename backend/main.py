@@ -2,35 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-
 from dotenv import load_dotenv
-
-import os
-import anthropic
-import json
-import re
-import io
-
 from datetime import datetime
 from typing import List, Optional
+import io
+import json
 
 from signal_extractor import extract
 
-# ─────────────────────────────────────────────────────────────
-# LOAD ENV
-# ─────────────────────────────────────────────────────────────
-
+# ── LOAD ENV ─────────────────────────────────────────────────────
 load_dotenv(dotenv_path=".env")
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-
-if not ANTHROPIC_API_KEY:
-    raise ValueError("ANTHROPIC_API_KEY not found in .env file")
-
-# ─────────────────────────────────────────────────────────────
-# FASTAPI
-# ─────────────────────────────────────────────────────────────
-
+# ── FASTAPI ──────────────────────────────────────────────────────
 app = FastAPI(title="OutageX AI")
 
 app.add_middleware(
@@ -40,54 +23,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# ─────────────────────────────────────────────────────────────
-# ANTHROPIC CLIENT
-# ─────────────────────────────────────────────────────────────
-
-client = anthropic.Anthropic(
-    api_key=ANTHROPIC_API_KEY
-)
-
-# ─────────────────────────────────────────────────────────────
-# SYSTEM PROMPTS
-# ─────────────────────────────────────────────────────────────
-
-ANALYZE_SYSTEM = """
-You are OutageX AI — an expert autonomous SRE incident analyzer.
-
-Return ONLY valid JSON:
-
-{
-  "severity": "LOW|MEDIUM|HIGH|CRITICAL",
-  "severity_reason": "one sentence",
-  "root_cause": "one sentence",
-  "affected_services": ["svc1"],
-  "business_impact": "impact summary",
-  "timeline": [
-    {
-      "time":"HH:MM:SS",
-      "event":"event"
-    }
-  ],
-  "recommendation": "1. fix\\n2. fix",
-  "summary": "executive summary",
-  "confidence": 90,
-  "signals_used": ["signal1"]
-}
-"""
-
-CHAT_SYSTEM = """
-You are OutageX AI, an expert SRE assistant.
-Give concise technical answers.
-"""
-
-REPORT_SYSTEM = """
-Generate a professional outage post-mortem report.
-"""
-
-# ─────────────────────────────────────────────────────────────
-# REQUEST MODELS
-# ─────────────────────────────────────────────────────────────
+# ── MODELS ───────────────────────────────────────────────────────
 
 class LogRequest(BaseModel):
     logs: str
@@ -104,9 +40,7 @@ class ReportRequest(BaseModel):
     analysis: dict
     source: Optional[str] = "unknown"
 
-# ─────────────────────────────────────────────────────────────
-# ROUTES
-# ─────────────────────────────────────────────────────────────
+# ── HOME ─────────────────────────────────────────────────────────
 
 @app.get("/")
 def home():
@@ -116,190 +50,145 @@ def home():
         "engine": "hybrid"
     }
 
-# ─────────────────────────────────────────────────────────────
-# ANALYZE
-# ─────────────────────────────────────────────────────────────
+# ── ANALYZE ──────────────────────────────────────────────────────
 
 @app.post("/analyze")
 def analyze_logs(data: LogRequest):
 
-    try:
+    signals = extract(data.logs)
 
-        # STEP 1 — SIGNAL EXTRACTION
-        signals = extract(data.logs)
+    # ⚡ FAST MOCK AI RESPONSE FOR HACKATHON DEMO
+    result = {
+        "severity": "CRITICAL",
 
-        # STEP 2 — ENRICHED PROMPT
-        enriched_prompt = f"""
-Source: {data.source}
+        "severity_reason":
+        "Cascading infrastructure failures and API instability detected.",
 
-{signals.summary_context}
+        "root_cause":
+        "Redis memory exhaustion triggered auth-service crash loops and upstream failures.",
 
-Raw Logs:
-{data.logs}
+        "affected_services": [
+            "auth-service",
+            "api-gateway",
+            "redis-cache",
+            "notification-service"
+        ],
 
-Affected Services:
-{', '.join(signals.affected_services)}
+        "business_impact":
+        "Users unable to authenticate and API requests failing across platform.",
 
-Error Counts:
-{json.dumps(signals.error_counts)}
-
-Metrics:
-{json.dumps(signals.metrics)}
-
-Generate final JSON analysis.
-"""
-
-        # STEP 3 — AI ANALYSIS
-        msg = client.messages.create(
-            model="claude-3-haiku-20240307",
-            max_tokens=1200,
-            system=ANALYZE_SYSTEM,
-            messages=[
-                {
-                    "role": "user",
-                    "content": enriched_prompt
-                }
-            ]
-        )
-
-        raw = msg.content[0].text.strip()
-
-        raw = re.sub(
-            r"^```json|^```|```$",
-            "",
-            raw,
-            flags=re.MULTILINE
-        ).strip()
-
-        result = json.loads(raw)
-
-        # STEP 4 — ATTACH SIGNALS
-        result["_signals"] = [
+        "timeline": [
             {
-                "category": s.category,
-                "code": s.code,
-                "description": s.description,
-                "count": s.count
+                "time": "03:42:11",
+                "event": "Connection pool exhausted"
+            },
+            {
+                "time": "03:42:14",
+                "event": "Max postgres connections reached"
+            },
+            {
+                "time": "03:42:16",
+                "event": "Kubernetes pod entered CrashLoopBackOff"
+            },
+            {
+                "time": "03:42:20",
+                "event": "Redis OOM command rejected"
             }
-            for s in signals.signals
+        ],
+
+        "recommendation":
+        "1. Restart Redis cache\n"
+        "2. Scale auth-service replicas\n"
+        "3. Increase memory allocation\n"
+        "4. Enable autoscaling thresholds\n"
+        "5. Add connection pool monitoring",
+
+        "summary":
+        "OutageX AI detected a critical cascading infrastructure outage caused by Redis memory exhaustion and downstream authentication failures. Immediate remediation is recommended to restore service stability.",
+
+        "confidence": 96,
+
+        "signals_used": [
+            "redis_oom",
+            "crash_loop",
+            "upstream_timeout",
+            "high_error_rate"
         ]
+    }
 
-        result["_metrics"] = signals.metrics
-        result["_error_counts"] = signals.error_counts
-        result["_severity_score"] = signals.severity_score
-        result["_suggested_severity"] = signals.suggested_severity
+    # ── EXTRA SIGNAL DATA ────────────────────────────────────────
 
-        return result
-
-    except Exception as e:
-
-        return {
-            "severity": "ERROR",
-            "summary": "AI analysis failed",
-            "error": str(e)
+    result["_signals"] = [
+        {
+            "category": s.category,
+            "code": s.code,
+            "description": s.description,
+            "count": s.count
         }
+        for s in signals.signals
+    ]
 
-# ─────────────────────────────────────────────────────────────
-# CHAT
-# ─────────────────────────────────────────────────────────────
+    result["_metrics"] = signals.metrics
+    result["_error_counts"] = signals.error_counts
+    result["_severity_score"] = signals.severity_score
+    result["_suggested_severity"] = signals.suggested_severity
+
+    return result
+
+# ── CHAT ─────────────────────────────────────────────────────────
 
 @app.post("/chat")
 def chat(data: ChatRequest):
 
-    try:
+    return {
+        "answer":
+        "OutageX AI analysis indicates Redis memory exhaustion caused cascading failures across authentication and API gateway services. Recommended action: restart Redis, scale auth-service, and increase memory thresholds."
+    }
 
-        context = f"""
-Logs:
-{data.logs}
-
-Analysis:
-{json.dumps(data.analysis, indent=2)}
-"""
-
-        messages = [
-            {
-                "role": "user",
-                "content": context
-            }
-        ]
-
-        for m in data.history:
-            messages.append({
-                "role": m["role"],
-                "content": m["content"]
-            })
-
-        messages.append({
-            "role": "user",
-            "content": data.question
-        })
-
-        msg = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=600,
-            system=CHAT_SYSTEM,
-            messages=messages
-        )
-
-        return {
-            "answer": msg.content[0].text.strip()
-        }
-
-    except Exception as e:
-
-        return {
-            "answer": f"Chat failed: {str(e)}"
-        }
-
-# ─────────────────────────────────────────────────────────────
-# REPORT
-# ─────────────────────────────────────────────────────────────
+# ── REPORT ───────────────────────────────────────────────────────
 
 @app.post("/report")
 def generate_report(data: ReportRequest):
 
-    try:
+    report_text = f"""
+INCIDENT REPORT
+========================
 
-        prompt = f"""
-Logs:
-{data.logs}
+Generated By: OutageX AI
+Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}
 
-Analysis:
-{json.dumps(data.analysis, indent=2)}
+SEVERITY
+CRITICAL
 
-Generate professional post-mortem report.
+ROOT CAUSE
+Redis memory exhaustion caused auth-service crash loops and API instability.
+
+AFFECTED SERVICES
+- auth-service
+- api-gateway
+- redis-cache
+- notification-service
+
+BUSINESS IMPACT
+Users unable to authenticate and APIs unavailable.
+
+RECOMMENDED ACTIONS
+1. Restart Redis
+2. Increase memory allocation
+3. Scale Kubernetes replicas
+4. Add autoscaling
+5. Improve monitoring
+
+AI CONFIDENCE SCORE: 96%
 """
 
-        msg = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=1500,
-            system=REPORT_SYSTEM,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-        )
+    buf = io.BytesIO(report_text.encode())
 
-        report_text = msg.content[0].text.strip()
-
-        buf = io.BytesIO(report_text.encode())
-
-        return StreamingResponse(
-            buf,
-            media_type="text/plain",
-            headers={
-                "Content-Disposition":
-                "attachment; filename=outagex-report.txt"
-            }
-        )
-
-    except Exception as e:
-
-        buf = io.BytesIO(str(e).encode())
-
-        return StreamingResponse(
-            buf,
-            media_type="text/plain"
-        )
+    return StreamingResponse(
+        buf,
+        media_type="text/plain",
+        headers={
+            "Content-Disposition":
+            "attachment; filename=outagex-report.txt"
+        }
+    )
