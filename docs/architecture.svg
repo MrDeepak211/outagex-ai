@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580" style="background:#080b10;font-family:'JetBrains Mono',monospace">
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" fill="#e6edf3" font-size="18" font-weight="bold" font-family="'Space Grotesk',sans-serif">OutageX AI — Autonomous Incident Intelligence Platform</text>
+  <text x="450" y="58" text-anchor="middle" fill="#58a6ff" font-size="11" letter-spacing="3">ARCHITECTURE OVERVIEW</text>
+
+  <!-- Row 1: Sources -->
+  <g transform="translate(0,80)">
+    <text x="450" y="14" text-anchor="middle" fill="#8b949e" font-size="9" letter-spacing="2">LOG SOURCES</text>
+    <!-- K8s -->
+    <rect x="60" y="22" width="130" height="44" rx="6" fill="#0d1117" stroke="#326ce5" stroke-width="1.5"/>
+    <text x="125" y="41" text-anchor="middle" fill="#326ce5" font-size="12">⎈ Kubernetes</text>
+    <text x="125" y="57" text-anchor="middle" fill="#8b949e" font-size="9">Pod / Cluster Logs</text>
+    <!-- Nginx -->
+    <rect x="210" y="22" width="130" height="44" rx="6" fill="#0d1117" stroke="#009639" stroke-width="1.5"/>
+    <text x="275" y="41" text-anchor="middle" fill="#009639" font-size="12">◈ Nginx</text>
+    <text x="275" y="57" text-anchor="middle" fill="#8b949e" font-size="9">Access / Error Logs</text>
+    <!-- CloudWatch -->
+    <rect x="360" y="22" width="130" height="44" rx="6" fill="#0d1117" stroke="#ff9900" stroke-width="1.5"/>
+    <text x="425" y="41" text-anchor="middle" fill="#ff9900" font-size="12">☁ CloudWatch</text>
+    <text x="425" y="57" text-anchor="middle" fill="#8b949e" font-size="9">AWS Metrics &amp; Logs</text>
+    <!-- Docker -->
+    <rect x="510" y="22" width="130" height="44" rx="6" fill="#0d1117" stroke="#2496ed" stroke-width="1.5"/>
+    <text x="575" y="41" text-anchor="middle" fill="#2496ed" font-size="12">◼ Docker</text>
+    <text x="575" y="57" text-anchor="middle" fill="#8b949e" font-size="9">Container Events</text>
+    <!-- Grafana future -->
+    <rect x="660" y="22" width="130" height="44" rx="6" fill="#0d1117" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4"/>
+    <text x="725" y="41" text-anchor="middle" fill="#484f58" font-size="12">◎ Grafana</text>
+    <text x="725" y="57" text-anchor="middle" fill="#484f58" font-size="9">Coming Soon</text>
+  </g>
+
+  <!-- Arrows down to aggregator -->
+  <line x1="125" y1="152" x2="125" y2="195" stroke="#30363d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="275" y1="152" x2="275" y2="195" stroke="#30363d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="425" y1="152" x2="425" y2="210" stroke="#30363d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="575" y1="152" x2="575" y2="195" stroke="#30363d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="125" y1="195" x2="425" y2="210" stroke="#30363d" stroke-width="1"/>
+  <line x1="275" y1="195" x2="425" y2="210" stroke="#30363d" stroke-width="1"/>
+  <line x1="575" y1="195" x2="425" y2="210" stroke="#30363d" stroke-width="1"/>
+
+  <!-- Aggregator -->
+  <rect x="300" y="210" width="250" height="44" rx="6" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="425" y="229" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">FastAPI Backend</text>
+  <text x="425" y="246" text-anchor="middle" fill="#8b949e" font-size="9">Log Ingestion &amp; Preprocessing</text>
+
+  <!-- Arrow to AI Engine -->
+  <line x1="425" y1="254" x2="425" y2="290" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrBlue)"/>
+
+  <!-- AI Engine box -->
+  <rect x="250" y="290" width="350" height="130" rx="8" fill="#0d1117" stroke="#ef4444" stroke-width="2"/>
+  <text x="425" y="312" text-anchor="middle" fill="#ef4444" font-size="13" font-weight="bold">⚡ Claude AI Analysis Engine</text>
+
+  <rect x="268" y="322" width="140" height="36" rx="5" fill="#1c0202" stroke="#ef444444" stroke-width="1"/>
+  <text x="338" y="337" text-anchor="middle" fill="#ef4444" font-size="10">Severity Classifier</text>
+  <text x="338" y="350" text-anchor="middle" fill="#8b949e" font-size="8">LOW→CRITICAL + reason</text>
+
+  <rect x="420" y="322" width="140" height="36" rx="5" fill="#1c0a02" stroke="#f97316aa" stroke-width="1"/>
+  <text x="490" y="337" text-anchor="middle" fill="#f97316" font-size="10">Root Cause Engine</text>
+  <text x="490" y="350" text-anchor="middle" fill="#8b949e" font-size="8">Pattern + causal analysis</text>
+
+  <rect x="268" y="368" width="140" height="36" rx="5" fill="#0a1f0f" stroke="#22c55e44" stroke-width="1"/>
+  <text x="338" y="383" text-anchor="middle" fill="#22c55e" font-size="10">Recommendation Engine</text>
+  <text x="338" y="396" text-anchor="middle" fill="#8b949e" font-size="8">Step-by-step fix actions</text>
+
+  <rect x="420" y="368" width="140" height="36" rx="5" fill="#1c2a3a" stroke="#58a6ff44" stroke-width="1"/>
+  <text x="490" y="383" text-anchor="middle" fill="#58a6ff" font-size="10">AI Chat Assistant</text>
+  <text x="490" y="396" text-anchor="middle" fill="#8b949e" font-size="8">Context-aware Q&amp;A</text>
+
+  <!-- Arrow to outputs -->
+  <line x1="425" y1="420" x2="425" y2="452" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrGreen)"/>
+
+  <!-- Outputs row -->
+  <g transform="translate(0,452)">
+    <text x="450" y="14" text-anchor="middle" fill="#8b949e" font-size="9" letter-spacing="2">OUTPUTS</text>
+    <rect x="120" y="22" width="150" height="44" rx="6" fill="#0d1117" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="195" y="41" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="bold">React Dashboard</text>
+    <text x="195" y="57" text-anchor="middle" fill="#8b949e" font-size="9">Incident UI + Timeline</text>
+
+    <rect x="285" y="22" width="150" height="44" rx="6" fill="#0d1117" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="360" y="41" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="bold">⬇ PDF Report</text>
+    <text x="360" y="57" text-anchor="middle" fill="#8b949e" font-size="9">Post-mortem export</text>
+
+    <rect x="450" y="22" width="150" height="44" rx="6" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="525" y="41" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold">💬 AI Chat</text>
+    <text x="525" y="57" text-anchor="middle" fill="#8b949e" font-size="9">Drill-down Q&amp;A</text>
+
+    <rect x="615" y="22" width="150" height="44" rx="6" fill="#0d1117" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4"/>
+    <text x="690" y="41" text-anchor="middle" fill="#484f58" font-size="11">🔔 Slack Alerts</text>
+    <text x="690" y="57" text-anchor="middle" fill="#484f58" font-size="9">Coming Soon</text>
+  </g>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#30363d"/>
+    </marker>
+    <marker id="arrBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#22c55e"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,19 @@
+# Sample Log Set 1 — DB Connection Exhaustion + K8s Crash Loop
+2024-01-15 03:42:11 ERROR auth-service: Connection pool exhausted (pool_size=50, waiting=127)
+2024-01-15 03:42:13 WARN  api-gateway: Upstream timeout after 30000ms - auth-service
+2024-01-15 03:42:14 ERROR postgres-primary: Max connections reached (max_connections=100, current=100)
+2024-01-15 03:42:15 ERROR api-gateway: 503 Service Unavailable - /api/v2/login [latency: 31204ms]
+2024-01-15 03:42:16 CRITICAL k8s: Pod auth-service-7d9f8b-xk2p1 CrashLoopBackOff (restarts: 8)
+2024-01-15 03:42:17 ERROR notification-svc: Failed to reach auth-service after 3 retries
+2024-01-15 03:42:18 WARN  load-balancer: Health check failed for 3/4 auth-service instances
+2024-01-15 03:42:20 ERROR redis-cache: OOM command not allowed - used_memory > maxmemory
+2024-01-15 03:42:22 CRITICAL monitoring: Error rate 89% on /api/v2/* (threshold: 5%)
+
+# Sample Log Set 2 — Memory Leak
+2024-01-16 11:15:03 WARN  payment-service: Heap usage at 78% (used: 1.56GB / max: 2GB)
+2024-01-16 11:18:44 WARN  payment-service: Heap usage at 91% (used: 1.82GB / max: 2GB)
+2024-01-16 11:21:09 ERROR payment-service: GC overhead limit exceeded - response time degraded
+2024-01-16 11:22:31 ERROR api-gateway: Timeout /api/v1/pay [latency: 45000ms]
+2024-01-16 11:22:33 CRITICAL payment-service: OutOfMemoryError - process killed by OOM killer
+2024-01-16 11:22:34 ERROR k8s: Pod payment-svc-5c7d9-lm3r2 OOMKilled (exit code 137)
+2024-01-16 11:22:35 WARN  k8s: Restarting pod payment-svc-5c7d9-lm3r2 (restart #3)
